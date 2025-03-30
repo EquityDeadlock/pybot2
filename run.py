@@ -28,7 +28,7 @@ class PyClient(discord.Client):
                 query = f'''INSERT OR IGNORE INTO guilds (id, name, shard_id, chunked, member_count) VALUES (?,?,?,?,?);'''
                 params = (guild.id, guild.name, guild.shard_id, 1 if guild.chunked else 0, guild.member_count)
                 cursor.execute(query, params)
-            query = '''SELECT * FROM guilds'''
+            query = '''SELECT * FROM guilds;'''
             cursor.execute(query)
             if TESTING_PRINT_TO_CONSOLE:
                 result = cursor.fetchall()
@@ -93,6 +93,7 @@ intents.members = True
 intents.dm_messages = True
 intents.voice_states = True
 intents.guilds = True
+
 
 client = PyClient(intents=intents)
 config = dotenv_values(".env")
