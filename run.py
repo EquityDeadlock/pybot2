@@ -20,9 +20,15 @@ def signal_handler(sig, frame):
 
 class PyClient(commands.Bot):
     async def on_ready(self):
+        print(f'Logged on as {self.user}')
+        try:
+            guild = discord.Object(id=config.get('DEV_GUILD_ID'))
+            synced = await self.tree.sync(guild=guild)
+            print(f'Synced {len(synced)} commands to guild [{guild.id}]')
+        except Exception as e:
+            print(f'Failed to sync: {e}')
         for guild in self.guilds:
             dcdb.guilds_create(guild)
-        print(f'Logged on as {self.user}')
 
     async def on_message(self, message: discord.Message):
         if isinstance(message, discord.channel.DMChannel):
@@ -41,6 +47,7 @@ class PyClient(commands.Bot):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
+config = dotenv_values(".env")
 dcdb.sql_init_schema()
 
 intents = discord.Intents.default();
@@ -51,5 +58,9 @@ intents.voice_states = True
 intents.guilds = True
 
 client = PyClient(command_prefix=";", intents=intents)
-config = dotenv_values(".env")
+
+@client.tree.command(name='ping', description='Pings bot', guild=discord.Object(id=config.get("DEV_GUILD_ID")))
+async def sayPing(interaction: discord.Interaction):
+    await interaction.response.send_message('Pong!')
+
 client.run(config.get("BOT_TOKEN"))
