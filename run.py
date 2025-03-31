@@ -1,4 +1,5 @@
 import discord
+from discord.ext import commands
 import logging
 import signal
 import sys
@@ -17,7 +18,7 @@ def signal_handler(sig, frame):
             print('failed to destroy database')
     sys.exit(0)
 
-class PyClient(discord.Client):
+class PyClient(commands.Bot):
     async def on_ready(self):
         for guild in self.guilds:
             dcdb.guilds_create(guild)
@@ -29,7 +30,7 @@ class PyClient(discord.Client):
             return
         dcdb.messages_create(message)
         print(f'Message in guild: [{message.guild.id},{message.guild.name}] - {message.author}: "{message.content}"')
-    
+
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         if isinstance(before, discord.channel.DMChannel):
             print(f'DM Message Edit {before.author}: "{before.content}" - "{after.content}"')
@@ -49,6 +50,6 @@ intents.dm_messages = True
 intents.voice_states = True
 intents.guilds = True
 
-client = PyClient(intents=intents)
+client = PyClient(command_prefix=";", intents=intents)
 config = dotenv_values(".env")
 client.run(config.get("BOT_TOKEN"))
