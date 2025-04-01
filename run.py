@@ -2,10 +2,11 @@ import discord
 from discord.ext import commands
 import logging
 import signal
+import os
 import sys
 import sqlite3
 import dcdb
-from dotenv import dotenv_values
+from config import configs
 
 TESTING_PRINT_TO_CONSOLE = True
 
@@ -19,14 +20,17 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 class PyClient(commands.Bot):
-    async def on_ready(self):
-        print(f'Logged on as {self.user}')
+    async def setup_hook(self):
+        await load()
         try:
-            guild = discord.Object(id=config.get('DEV_GUILD_ID'))
+            guild = discord.Object(id=configs.get('DEV_GUILD_ID'))
             synced = await self.tree.sync(guild=guild)
             print(f'Synced {len(synced)} commands to guild [{guild.id}]')
         except Exception as e:
             print(f'Failed to sync: {e}')
+
+    async def on_ready(self):
+        print(f'Logged on as {self.user}')
         for guild in self.guilds:
             dcdb.guilds_create(guild)
 
@@ -47,7 +51,6 @@ class PyClient(commands.Bot):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-config = dotenv_values(".env")
 dcdb.sql_init_schema()
 
 intents = discord.Intents.default();
@@ -59,8 +62,15 @@ intents.guilds = True
 
 client = PyClient(command_prefix=";", intents=intents)
 
-@client.tree.command(name='ping', description='Pings bot', guild=discord.Object(id=config.get("DEV_GUILD_ID")))
-async def sayPing(interaction: discord.Interaction):
-    await interaction.response.send_message('Pong!')
+async def load():
+    print('Loading cogs:')
+    count = 0
+    dir = configs.get('DIR_COGS')
+    for file in os.listdir(dir):
+        if file.startswith('cog_') and file.endswith('.py'):
+            await client.load_extension(f'{dir}.{file[:-3]}')
+            print(f'Cog: {file[:-3]}')
+            count += 1
+    print(f'Loaded Cogs: {count}\n')
 
-client.run(config.get("BOT_TOKEN"))
+client.run(configs.get("BOT_TOKEN"))
