@@ -31,7 +31,7 @@ def messages_update(before: discord.Message, after: discord.Message):
         cursor = sqlConnection.cursor()
 
         query = '''INSERT OR IGNORE INTO messages (id, guild_id, channel_id, user_id, action, content, reply_id, time) VALUES (?,?,?,?,?,?,?,?);'''
-        params = (before.id, before.guild.id, before.channel.id, before.author.id, int(MessageAction.EDIT), before.content, before.reference.message_id if before.reference is not None else None, before.created_at)
+        params = (before.id, before.guild.id, before.channel.id, before.author.id, int(MessageAction.EDIT), before.content, before.reference.message_id if before.reference is not None else None, after.created_at)
         cursor.execute(query, params)
         if TESTING_PRINT_TO_CONSOLE:
             query = '''SELECT * FROM messages;'''
