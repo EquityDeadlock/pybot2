@@ -4,7 +4,7 @@ import os
 from enum import IntEnum
 
 DB_NAME = 'sql.db'
-TESTING_PRINT_TO_CONSOLE = True
+TESTING_PRINT_TO_CONSOLE = False 
 
 
 def messages_create(message: discord.Message):
@@ -23,6 +23,7 @@ def messages_create(message: discord.Message):
     except sqlite3.Error as error:
             print(f'Error: {error}')
     finally:
+            sqlConnection.commit()
             sqlConnection.close()
 
 def messages_update(before: discord.Message, after: discord.Message):
@@ -41,6 +42,7 @@ def messages_update(before: discord.Message, after: discord.Message):
     except sqlite3.Error as error:
         print(f'Error: {error}')
     finally:
+        sqlConnection.commit()
         sqlConnection.close()
 
 def guilds_create(guild: discord.Guild):
@@ -58,6 +60,7 @@ def guilds_create(guild: discord.Guild):
     except sqlite3.Error as error:
         print(f'Error: {error}')
     finally:
+        sqlConnection.commit()
         sqlConnection.close()
 
 
@@ -100,16 +103,28 @@ def sql_init_schema():
             '''
         cursor.execute(query)
 
-        query = '''Select * from guilds,users,levels;'''
-        cursor.execute(query)
-        result = cursor.fetchall()
-        print(result)
-
-        cursor.close()
+        if TESTING_PRINT_TO_CONSOLE:
+            query = '''Select * from guilds;'''
+            cursor.execute(query)
+            result = cursor.fetchmany(size=5)
+            print(result)
+            query = '''Select * from users;'''
+            cursor.execute(query)
+            result = cursor.fetchmany(size=5)
+            print(result)
+            query = '''Select * from levels;'''
+            cursor.execute(query)
+            result = cursor.fetchmany(size=5)
+            print(result)
+            query = '''Select * from messages;'''
+            cursor.execute(query)
+            result = cursor.fetchmany(size=5)
+            print(result)
 
     except sqlite3.Error as error:
         print(f'Error: {error}')
     finally:
+        sqlConnection.commit()
         sqlConnection.close()
 
 def db_delete():
