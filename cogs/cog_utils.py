@@ -8,8 +8,7 @@ class Utils(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f'{__name__} is online!')
-        await self.client.tree.sync()
+        print(f'{__name__} Loaded')
 
     @discord.app_commands.command(name='ping', description='Pings bot')
     async def sayPing(self, ctx):
