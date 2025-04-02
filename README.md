@@ -2,7 +2,7 @@
 
 ## Installation
 
-This project uses python3.10.6
+This project uses python3.10.12
 
 Use the package manager [pip](https://pip.pypa.io/en/stable) to install
 
