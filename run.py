@@ -21,7 +21,8 @@ def signal_handler(sig, frame):
 
 class PyClient(commands.Bot):
     async def setup_hook(self):
-        await load()
+        loaded_count = await load(configs.get('DIR_COGS'))
+        print(f'Loaded: {loaded_count}')
         try:
             guild = discord.Object(id=configs.get('DEV_GUILD_ID'))
             synced = await self.tree.sync(guild=guild)
@@ -62,15 +63,17 @@ intents.guilds = True
 
 client = PyClient(command_prefix=";", intents=intents)
 
-async def load():
+async def load(dir: str, count: int = 0) -> int:
     print('Loading cogs:')
-    count = 0
-    dir = configs.get('DIR_COGS')
     for file in os.listdir(dir):
         if file.startswith('cog_') and file.endswith('.py'):
-            await client.load_extension(f'{dir}.{file[:-3]}')
+            await client.load_extension(f'{dir.replace("/", ".")}.{file[:-3]}')
             print(f'Cog: {file[:-3]}')
             count += 1
-    print(f'Loaded Cogs: {count}\n')
+        elif file.startswith('cog_'):
+            count = await load(dir + '/' + file, count)
+        else:
+            pass
+    return count
 
 client.run(configs.get("BOT_TOKEN"))
