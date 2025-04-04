@@ -63,6 +63,75 @@ def guilds_create(guild: discord.Guild):
         sqlConnection.commit()
         sqlConnection.close()
 
+class Hangman:
+    game_id = 1
+    @staticmethod
+    def session_create(word: str):
+        try:
+            sqlConnection = sqlite3.connect(DB_NAME)
+            cursor = sqlConnection.cursor()
+
+            query = '''INSERT OR IGNORE INTO hangman_sessions (id, word, winner) VALUES (?,?,?);'''
+            params = (Hangman.game_id, word, None)
+
+            cursor.execute(query, params)
+        except sqlite3.Error as error:
+            print(f'Error: {error}')
+        finally:
+            sqlConnection.commit()
+            sqlConnection.close()
+            Hangman.game_id += 1
+
+    @staticmethod
+    def session_update_winner(id: int, winner: discord.User.id):
+        try:
+            sqlConnection = sqlite3.connect(DB_NAME)
+            cursor = sqlConnection.cursor()
+
+            query = '''UPDATE hangman_sessions SET winner=? WHERE id=?;'''
+            params = (winner, id)
+
+            cursor.execute(query, params)
+        except sqlite3.Error as error:
+            print(f'Error: {error}')
+        finally:
+            sqlConnection.commit()
+            sqlConnection.close()
+
+    @staticmethod
+    def getSessions():
+        try:
+            sqlConnection = sqlite3.connect(DB_NAME)
+            cursor = sqlConnection.cursor()
+
+            query = '''SELECT id, word FROM hangman_sessions;'''
+
+            cursor.execute(query)
+
+            result = cursor.fetchmany(size=5)
+        except sqlite3.Error as error:
+            print(f'Error: {error}')
+        finally:
+            sqlConnection.commit()
+            sqlConnection.close()
+            return result
+
+    @staticmethod
+    def session_update(id: int, word: str, winner: discord.User.id):
+        try:
+            sqlConnection = sqlConnection.connect(DB_NAME)
+            cursor = sqlConnection.cursor()
+
+            query = '''INSERT INTO OR IGNORE hangman_sessions (id, word, winner) VALUES (?,?,?);'''
+            params = (game_id, word, winner)
+
+            cursor.execute(query, params)
+        except sqlite3.Error as error:
+            print(f'Error: {error}')
+        finally:
+            sqlConnection.commit()
+            sqlConnection.close()
+
 
 def sql_init_schema():
     try:
@@ -102,6 +171,24 @@ def sql_init_schema():
                 PRIMARY KEY(guild_id, user_id));
             '''
         cursor.execute(query)
+
+        query = '''CREATE TABLE IF NOT EXISTS hangman_sessions(
+                id INTEGER NOT NULL,
+                word TEXT NOT NULL,
+                winner INTEGER,
+                PRIMARY KEY(id, word));
+            '''
+        cursor.execute(query)
+
+        query = '''CREATE TABLE IF NOT EXISTS hangman_guesses(
+                id INTEGER NOT NULL,
+                session_id ID NOT NULL,
+                user INTEGER NOT NULL,
+                type INTEGER NOT NULL,
+                guess TEXT NOT NULL,
+                PRIMARY KEY(id, session_id, user, type, guess));'''
+        cursor.execute(query)
+
 
         if TESTING_PRINT_TO_CONSOLE:
             query = '''Select * from guilds;'''
