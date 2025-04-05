@@ -32,6 +32,16 @@ class Hangman(commands.GroupCog, group_name='hangman'):
         embed = discord.Embed(title='Hangman Leaderboard',description='')
         await ctx.response.send_message(embed=embed)
 
+    @app_commands.command(name='guessletter', description='Guess a letter')
+    async def hangman_guess_letter(self, ctx: discord.Interaction, letter: str):
+        embed = discord.Embed(title=f'{ctx.user.name} guessed letter: "{letter}"',description='')
+        await ctx.response.send_message(embed=embed)
+
+    @app_commands.command(name='guessword', description='Guess a word')
+    async def hangman_guess_word(self, ctx: discord.Interaction, word: str):
+        embed = discord.Embed(title=f'{ctx.user.name} guessed word: "{word}"',description='')
+        await ctx.response.send_message(embed=embed)
+
     def get_random_word(self, min, max) -> str:
         filtered = [word for word in self.word_list if (len(word) >= min and len(word) <= max)]
         return random.choice(filtered)
