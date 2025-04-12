@@ -1,6 +1,7 @@
+import os
+import random
 import sqlite3
 import discord
-import os
 from enum import IntEnum
 
 DB_NAME = 'sql.db'
@@ -64,6 +65,9 @@ def guilds_create(guild: discord.Guild):
         sqlConnection.close()
 
 class Hangman:
+    class GuessType(IntEnum):
+        LETTER = 1
+        WORD = 2
     game_id = 1
     @staticmethod
     def session_create(word: str):
@@ -81,6 +85,38 @@ class Hangman:
             sqlConnection.commit()
             sqlConnection.close()
             Hangman.game_id += 1
+
+    @staticmethod
+    def session_guess_letter(session_id: int, user_id: int, type: int, letter: str):
+        try:
+            sqlConnection = sqlite3.connect(DB_NAME)
+            cursor = sqlConnection.cursor()
+
+            query = '''INSERT OR IGNORE INTO hangman_guesses(id, session_id, user, type, guess) VALUES (?,?,?,?,?);'''
+            params = (random.random(), Hangman.game_id, user_id, Hangman.GuessType.LETTER, letter)
+
+            cursor.execute(query, params)
+        except sqlite3.Error as error:
+            print(f'Error: {error}')
+        finally:
+            sqlConnection.commit()
+            sqlConnection.close()
+
+    @staticmethod
+    def session_guess_word(session_id: int, user_id: int, type: int, word: str):
+        try:
+            sqlConnection = sqlite3.connect(DB_NAME)
+            cursor = sqlConnection.cursor()
+
+            query = '''INSERT OR IGNORE INTO hangman_guesses(id, session_id, user, type, guess) VALUES (?,?,?,?,?);'''
+            params = (random.random(), Hangman.game_id, user_id, Hangman.GuessType.WORD, word)
+
+            cursor.execute(query, params)
+        except sqlite3.Error as error:
+            print(f'Error: {error}')
+        finally:
+            sqlConnection.commit()
+            sqlConnection.close()
 
     @staticmethod
     def session_update_winner(id: int, winner: discord.User.id):
@@ -204,6 +240,10 @@ def sql_init_schema():
             result = cursor.fetchmany(size=5)
             print(result)
             query = '''Select * from messages;'''
+            cursor.execute(query)
+            result = cursor.fetchmany(size=5)
+            print(result)
+            query = '''Select * from hangman_guesses;'''
             cursor.execute(query)
             result = cursor.fetchmany(size=5)
             print(result)
