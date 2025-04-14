@@ -3,6 +3,7 @@ import random
 import sqlite3
 import discord
 from enum import IntEnum
+from hashlib import sha256
 
 DB_NAME = 'sql.db'
 TESTING_PRINT_TO_CONSOLE = False 
@@ -69,6 +70,13 @@ class Hangman:
         LETTER = 1
         WORD = 2
     game_id = 1
+
+    @staticmethod
+    def session_id_generate(guild_id: int, channel_id: int) -> str:
+        hasher = sha256()
+        hasher.update(f'{guild_id + channel_id}'.encode())
+        return hasher.hexdigest()
+
     @staticmethod
     def session_create(word: str):
         try:
