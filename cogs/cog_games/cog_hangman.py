@@ -11,7 +11,7 @@ from discord import app_commands
 class Hangman(commands.GroupCog, group_name='hangman'):
     def __init__(self, client: commands.Bot):
         self.client = client
-        nltk.download('words')
+        nltk.download('words', quiet=True)
         self.word_list = words.words('en-basic')
 
     @commands.Cog.listener()
