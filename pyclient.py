@@ -7,7 +7,9 @@ from config import configs
 
 class PyClient(commands.Bot):
     async def load(self, dir: str, count: int = 0) -> int:
-        print('Loading cogs:')
+        if(self.firstCog):
+            self.firstCog = False
+            print('Loading cogs:')
         for file in os.listdir(dir):
             if file.startswith('cog_') and file.endswith('.py'):
                 await self.load_extension(f'{dir.replace("/", ".")}.{file[:-3]}')
@@ -20,6 +22,7 @@ class PyClient(commands.Bot):
         return count
 
     async def setup_hook(self):
+        self.firstCog = True
         self.loaded_cogs = await self.load(configs.get('DIR_COGS'))
         print(f'Loaded: {self.loaded_cogs}')
         try:
